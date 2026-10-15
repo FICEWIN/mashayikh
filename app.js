@@ -19,17 +19,19 @@ function hijriStr(iso){
   } catch { return ''; }
 }
 function paintHijri(){ const h = hijriStr(S.date); $('#hijri').textContent = h; S.hijri = h; }
-const blankRow = () => ({ sheikh:'', period:'', att:null, note:'' });
+const blankRow = () => ({ sheikh:'', subject:'', period:'', att:null, note:'' });
+const DEFAULT_SUBJECTS = ['القرآن الكريم','التجويد','التفسير','الحديث','الفقه','السيرة','اللغة العربية','التوحيد'];
 function loadDraft(){
   try {
     const d = JSON.parse(localStorage.getItem(LS_DRAFT));
     if (d && Array.isArray(d.rows)) {
       if (!localStorage.getItem('mm_areef_fix') && !d.areef) d.areef = 'حسين الزهراني';
       try{ localStorage.setItem('mm_areef_fix','1'); }catch{}
+      if (!Array.isArray(d.subjects)) d.subjects = [...DEFAULT_SUBJECTS];
       return d;
     }
   } catch {}
-  return { sheikhs:[], stage:'متوسط', klass:'الأول أ', klassCustom:'', date:todayISO(), areef:'حسين الزهراني', rows:Array.from({length:8}, blankRow) };
+  return { sheikhs:[], subjects:[...DEFAULT_SUBJECTS], stage:'متوسط', klass:'الأول أ', klassCustom:'', date:todayISO(), areef:'حسين الزهراني', rows:Array.from({length:8}, blankRow) };
 }
 let S = loadDraft();
 function save(){ try{ localStorage.setItem(LS_DRAFT, JSON.stringify(S)); }catch{} $('#saveState').textContent = 'حُفظ تلقائيًا ' + new Date().toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}); }
@@ -51,6 +53,7 @@ function renderRows(){
   tb.innerHTML = S.rows.map((r, i)=>`<tr>
     <td class="num">${i+1}</td>
     <td><select data-i="${i}" data-f="sheikh"><option value="">— اختر الشيخ —</option>${S.sheikhs.map(n=>`<option ${r.sheikh===n?'selected':''}>${n}</option>`).join('')}</select></td>
+    <td><select data-i="${i}" data-f="subject"><option value="">—</option>${(S.subjects||[]).map(n=>`<option ${r.subject===n?'selected':''}>${n}</option>`).join('')}</select></td>
     <td><select data-i="${i}" data-f="period"><option value="">—</option>${PERIODS.map(p=>`<option ${r.period===p?'selected':''}>${p}</option>`).join('')}</select></td>
     <td><div class="att"><button data-i="${i}" data-a="present" class="${r.att==='present'?'on-ok':''}" aria-label="حاضر">✓</button></div></td>
     <td><div class="att"><button data-i="${i}" data-a="absent" class="${r.att==='absent'?'on-no':''}" aria-label="لم يحضر">✕</button></div></td>
@@ -85,10 +88,15 @@ $('#btnAddRow').onclick = () => { S.rows.push(blankRow()); renderRows(); autoSav
 // إدارة المشايخ
 function renderSheikhs(){
   $('#sheikhList').innerHTML = S.sheikhs.map((n,i)=>`<div class="srow"><span>${n}</span><button data-del="${i}">حذف</button></div>`).join('') || '<p class="muted">لا مشايخ بعد — أضف أول اسم.</p>';
+  $('#subjectList').innerHTML = (S.subjects||[]).map((n,i)=>`<div class="srow"><span>${n}</span><button data-dels="${i}">حذف</button></div>`).join('') || '<p class="muted">لا مواد.</p>';
 }
 $('#sheikhList').addEventListener('click', e => {
   const b = e.target.closest('button[data-del]'); if (!b) return;
   S.sheikhs.splice(+b.dataset.del, 1); renderSheikhs(); renderRows(); autoSave();
+});
+$('#subjectList').addEventListener('click', e => {
+  const b = e.target.closest('button[data-dels]'); if (!b) return;
+  S.subjects.splice(+b.dataset.dels, 1); renderSheikhs(); renderRows(); autoSave();
 });
 function addSheikh(){
   const v = $('#newSheikh').value.trim();
@@ -97,6 +105,12 @@ function addSheikh(){
   $('#newSheikh').value = ''; renderSheikhs(); renderRows(); autoSave();
 }
 $('#btnAddSheikh').onclick = addSheikh;
+$('#btnAddSubject').onclick = () => {
+  const v = $('#newSubject').value.trim();
+  if (!v) return;
+  if (!S.subjects.includes(v)) S.subjects.push(v);
+  $('#newSubject').value = ''; renderSheikhs(); renderRows(); autoSave();
+};
 $('#btnSheikhs').onclick = () => { renderSheikhs(); $('#modal').hidden = false; };
 $('#btnCloseModal').onclick = () => { $('#modal').hidden = true; };
 $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') $('#modal').hidden = true; });
@@ -107,7 +121,7 @@ function setHist(h){ try{ localStorage.setItem(LS_HIST, JSON.stringify(h)); }cat
 $('#btnSaveDay').onclick = () => {
   save();
   const h = getHist().filter(x => !(x.date === S.date && x.klass === (S.klass === '__custom' ? S.klassCustom : S.klass)));
-  h.unshift({ date:S.date, hijri:S.hijri, stage:S.stage, klass:S.klass === '__custom' ? S.klassCustom : S.klass, areef:S.areef, sheikhs:S.sheikhs, rows:S.rows });
+  h.unshift({ date:S.date, hijri:S.hijri, stage:S.stage, klass:S.klass === '__custom' ? S.klassCustom : S.klass, areef:S.areef, sheikhs:S.sheikhs, subjects:S.subjects, rows:S.rows });
   setHist(h.slice(0, 60)); renderHist();
   $('#saveState').textContent = 'حُفظت نسخة اليوم في السجل';
 };
@@ -119,7 +133,7 @@ function renderHist(){
 $('#histList').addEventListener('click', e => {
   const v = e.target.closest('button[data-v]'), d = e.target.closest('button[data-d]');
   const h = getHist();
-  if (v) { const x = h[+v.dataset.v]; if (x) { S = { ...x, sheikhs:x.sheikhs||S.sheikhs, klassCustom:'' }; if (S.klass && !Object.values(CLASSES).flat().includes(S.klass)) { S.klassCustom = S.klass; S.klass = '__custom'; } renderAll(); save(); window.scrollTo({top:0}); $('#historySec').hidden = true; } }
+  if (v) { const x = h[+v.dataset.v]; if (x) { S = { ...x, sheikhs:x.sheikhs||S.sheikhs, subjects:x.subjects||S.subjects, klassCustom:'' }; if (S.klass && !Object.values(CLASSES).flat().includes(S.klass)) { S.klassCustom = S.klass; S.klass = '__custom'; } renderAll(); save(); window.scrollTo({top:0}); $('#historySec').hidden = true; } }
   if (d) { h.splice(+d.dataset.d, 1); setHist(h); renderHist(); }
 });
 let histOpen = false;
