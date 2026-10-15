@@ -1,4 +1,4 @@
-const CACHE = 'mm-v3';
+const CACHE = 'mm-v4';
 const CORE = ['./', './index.html', './styles.css', './app.js', './manifest.json'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));

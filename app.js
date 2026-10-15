@@ -133,11 +133,19 @@ function renderHist(){
 $('#histList').addEventListener('click', e => {
   const v = e.target.closest('button[data-v]'), d = e.target.closest('button[data-d]');
   const h = getHist();
-  if (v) { const x = h[+v.dataset.v]; if (x) { S = { ...x, sheikhs:x.sheikhs||S.sheikhs, subjects:x.subjects||S.subjects, klassCustom:'' }; if (S.klass && !Object.values(CLASSES).flat().includes(S.klass)) { S.klassCustom = S.klass; S.klass = '__custom'; } renderAll(); save(); window.scrollTo({top:0}); $('#historySec').hidden = true; } }
+  if (v) { const x = h[+v.dataset.v]; if (x) { S = { ...x, sheikhs:x.sheikhs||S.sheikhs, subjects:x.subjects||S.subjects, klassCustom:'' }; if (S.klass && !Object.values(CLASSES).flat().includes(S.klass)) { S.klassCustom = S.klass; S.klass = '__custom'; } renderAll(); save(); window.scrollTo({top:0}); location.hash = '#/'; } }
   if (d) { h.splice(+d.dataset.d, 1); setHist(h); renderHist(); }
 });
-let histOpen = false;
-$('#btnHistory').onclick = () => { histOpen = !histOpen; $('#historySec').hidden = !histOpen; if (histOpen) renderHist(); };
+function route(){
+  const h = location.hash === '#/history';
+  $('#view-main').hidden = h;
+  $('#view-hist').hidden = !h;
+  if (h) renderHist();
+  window.scrollTo({ top: 0 });
+}
+window.addEventListener('hashchange', route);
+$('#btnHistory').onclick = () => { location.hash = '#/history'; };
+$('#btnBack').onclick = () => { location.hash = '#/'; };
 
 // طباعة + تثبيت
 $('#btnPrint').onclick = () => window.print();
@@ -145,4 +153,4 @@ let deferred = null;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; $('#btnInstall').hidden = false; });
 $('#btnInstall').onclick = async () => { if (!deferred) return; deferred.prompt(); await deferred.userChoice; deferred = null; $('#btnInstall').hidden = true; };
 
-renderAll(); save();
+renderAll(); save(); route();

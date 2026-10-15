@@ -75,7 +75,7 @@ tbody td select:focus,tbody td input:focus{outline:2px solid var(--gold);border-
 }
 @media print{
   @page{size:A4 landscape;margin:8mm}
-  .no-print,.topbar{display:none !important}
+  .no-print,.topbar,#view-hist{display:none !important}
   body{background:#fff}
   .wrap{max-width:none;padding:0}
   .sheet{box-shadow:none;border-radius:0}
