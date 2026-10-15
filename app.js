@@ -9,6 +9,16 @@ const CLASSES = {
   'كلية': ['المستوى الأول','المستوى الثاني','المستوى الثالث','المستوى الرابع','المستوى الخامس','المستوى السادس','المستوى السابع','المستوى الثامن'],
 };
 const todayISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+// التاريخ هجري (تقويم أم القرى) + اسم اليوم
+function hijriStr(iso){
+  try {
+    const p = String(iso || '').split('-'); if (p.length < 3) return '';
+    const d = new Date(+p[0], +p[1]-1, +p[2]);
+    const f = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    return f.format(d);
+  } catch { return ''; }
+}
+function paintHijri(){ const h = hijriStr(S.date); $('#hijri').textContent = h; S.hijri = h; }
 const blankRow = () => ({ sheikh:'', period:'', att:null, note:'' });
 function loadDraft(){
   try {
@@ -47,14 +57,14 @@ function renderRows(){
     <td><input data-i="${i}" data-f="note" value="${(r.note||'').replace(/"/g,'&quot;')}" placeholder="—"></td>
   </tr>`).join('');
 }
-function paintMeta(){ $('#dayDate').value = S.date || todayISO(); $('#areef').value = S.areef || ''; $('#signName').textContent = S.areef || ''; }
+function paintMeta(){ if (!S.date) S.date = todayISO(); $('#dayDate').value = S.date; $('#areef').value = S.areef || ''; $('#signName').textContent = S.areef || ''; paintHijri(); }
 function renderAll(){ renderStages(); renderKlasses(); renderRows(); paintMeta(); }
 
 $('#stage').onchange = e => { S.stage = e.target.value; S.klass = (CLASSES[S.stage]||[])[0] || ''; renderKlasses(); autoSave(); };
 $('#klass').onchange = e => { S.klass = e.target.value; renderKlasses(); autoSave(); };
 $('#klassCustom').oninput = e => { S.klassCustom = e.target.value; autoSave(); };
 $('#dayDate').onclick = e => { try{ e.target.showPicker(); }catch{} };
-$('#dayDate').onchange = e => { S.date = e.target.value; autoSave(); };
+$('#dayDate').onchange = e => { S.date = e.target.value; paintHijri(); autoSave(); };
 $('#areef').oninput = e => { S.areef = e.target.value; $('#signName').textContent = S.areef || ''; autoSave(); };
 $('#rows').addEventListener('change', e => {
   const i = +e.target.dataset.i; if (isNaN(i)) return;
@@ -97,13 +107,13 @@ function setHist(h){ try{ localStorage.setItem(LS_HIST, JSON.stringify(h)); }cat
 $('#btnSaveDay').onclick = () => {
   save();
   const h = getHist().filter(x => !(x.date === S.date && x.klass === (S.klass === '__custom' ? S.klassCustom : S.klass)));
-  h.unshift({ date:S.date, stage:S.stage, klass:S.klass === '__custom' ? S.klassCustom : S.klass, areef:S.areef, sheikhs:S.sheikhs, rows:S.rows });
+  h.unshift({ date:S.date, hijri:S.hijri, stage:S.stage, klass:S.klass === '__custom' ? S.klassCustom : S.klass, areef:S.areef, sheikhs:S.sheikhs, rows:S.rows });
   setHist(h.slice(0, 60)); renderHist();
   $('#saveState').textContent = 'حُفظت نسخة اليوم في السجل';
 };
 function renderHist(){
   const h = getHist();
-  $('#histList').innerHTML = h.map((x,i)=>`<div class="hist"><b>${x.date} • ${x.stage} • ${x.klass||'—'}</b>
+  $('#histList').innerHTML = h.map((x,i)=>`<div class="hist"><b>${x.hijri || x.date} • ${x.stage} • ${x.klass||'—'}</b>
     <button class="btn gold" data-v="${i}">عرض</button><button class="btn ghost" data-d="${i}">حذف</button></div>`).join('') || '<p class="muted">لا نسخ محفوظة بعد.</p>';
 }
 $('#histList').addEventListener('click', e => {

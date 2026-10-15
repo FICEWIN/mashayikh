@@ -23,6 +23,7 @@ body{margin:0;font-family:"Segoe UI",Tahoma,Arial,sans-serif;background:#efe8d6;
 .meta-item label{display:block;font-size:.75rem;font-weight:800;color:var(--pine);margin-bottom:.15rem}
 .meta-item select,.meta-item input{width:100%;border:none;background:transparent;font-family:inherit;font-size:.95rem;color:var(--ink);padding:.15rem 0}
 .meta-item select:focus,.meta-item input:focus{outline:none}
+.hijri{font-size:.8rem;color:var(--gold-d);font-weight:800;margin-top:.1rem}
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:560px}
 thead th{background:linear-gradient(180deg,#0e5a40,var(--pine-d));color:#fff;padding:.5rem .4rem;border:1px solid var(--gold-d)}
