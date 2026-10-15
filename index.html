@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>متابعة حضور المشايخ المدرسين | معهد الحرم المكي الشريف</title>
+<meta name="description" content="جدول متابعة حضور المشايخ المدرسين بمعهد الحرم المكي الشريف — تحضير سريع من الجوال مع طباعة">
+<link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b3d2e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+<header class="topbar no-print">
+  <div class="brand"><span class="brand-dot"></span><span>حضور المشايخ</span></div>
+  <div class="top-actions">
+    <button id="btnSheikhs" class="tbtn">المشايخ</button>
+    <button id="btnHistory" class="tbtn">السجل</button>
+    <button id="btnPrint" class="tbtn gold">طباعة</button>
+    <button id="btnInstall" class="tbtn" hidden>تثبيت</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="sheet" class="sheet">
+    <div class="orn-head">
+      <h1>معهد الحرم المكي الشريف</h1>
+      <p>متابعة حضور المشايخ المدرسين</p>
+    </div>
+    <div class="meta">
+      <div class="meta-item"><label>المرحلة</label><select id="stage"></select></div>
+      <div class="meta-item"><label>الصف</label><select id="klass"></select><input id="klassCustom" placeholder="اكتب الصف" hidden></div>
+      <div class="meta-item"><label>اليوم والتاريخ</label><input type="date" id="dayDate"></div>
+      <div class="meta-item"><label>العريف</label><input id="areef" placeholder="اسم العريف"></div>
+    </div>
+    <div class="tbl-wrap"><table id="tbl">
+      <thead><tr><th>م</th><th>الشيخ</th><th>الحصة</th><th colspan="2">الحضور</th><th>الملاحظات</th></tr>
+      <tr class="sub"><th></th><th></th><th></th><th class="c-ok">حضر</th><th class="c-no">لم يحضر</th><th></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+    <div class="sheet-actions no-print">
+      <button id="btnAddRow" class="btn ghost">+ صف جديد</button>
+      <button id="btnSaveDay" class="btn gold">حفظ نسخة اليوم</button>
+      <span id="saveState" class="muted"></span>
+    </div>
+    <div class="sign">العريف<div class="sign-line" id="signName"></div></div>
+  </section>
+
+  <section id="historySec" class="card no-print" hidden>
+    <h2>سجل الأيام المحفوظة</h2>
+    <div id="histList"></div>
+  </section>
+</main>
+
+<div id="modal" class="modal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-label="إدارة المشايخ">
+  <h2>المشايخ</h2>
+  <div class="addrow"><input id="newSheikh" placeholder="اسم الشيخ الجديد"><button id="btnAddSheikh" class="btn gold">إضافة</button></div>
+  <div id="sheikhList"></div>
+  <button id="btnCloseModal" class="btn ghost" style="margin-top:.6rem">إغلاق</button>
+</div></div>
+
+<script src="app.js"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
+</body>
+</html>
