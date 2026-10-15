@@ -13,9 +13,13 @@ const blankRow = () => ({ sheikh:'', period:'', att:null, note:'' });
 function loadDraft(){
   try {
     const d = JSON.parse(localStorage.getItem(LS_DRAFT));
-    if (d && Array.isArray(d.rows)) return d;
+    if (d && Array.isArray(d.rows)) {
+      if (!localStorage.getItem('mm_areef_fix') && !d.areef) d.areef = 'حسين الزهراني';
+      try{ localStorage.setItem('mm_areef_fix','1'); }catch{}
+      return d;
+    }
   } catch {}
-  return { sheikhs:[], stage:'متوسط', klass:'الأول أ', klassCustom:'', date:todayISO(), areef:'', rows:Array.from({length:8}, blankRow) };
+  return { sheikhs:[], stage:'متوسط', klass:'الأول أ', klassCustom:'', date:todayISO(), areef:'حسين الزهراني', rows:Array.from({length:8}, blankRow) };
 }
 let S = loadDraft();
 function save(){ try{ localStorage.setItem(LS_DRAFT, JSON.stringify(S)); }catch{} $('#saveState').textContent = 'حُفظ تلقائيًا ' + new Date().toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}); }
